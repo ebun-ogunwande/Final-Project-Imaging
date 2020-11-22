@@ -1,0 +1,59 @@
+close all;
+%reads image and assigns image to variable sick1
+sick1 = imread('sickle10.jpg');
+%shows image sick1
+imshow(sick1)
+figure
+%converts color image sick1 to
+A = rgb2gray(sick1);
+imshow(A)
+figure
+%calculates a threshold from the grayscale image
+sickle = graythresh(A);
+%converts threshold of grayscale image to black and white binary image
+sick2=im2bw(A, sickle);
+imshow(sick2)
+figure
+%inverts the image from white background black cells to the opposite
+sick3=imcomplement(sick2);
+imshow(sick3)
+%fills in holes in the cell images
+sick4 = imfill(sick3,'holes');
+figure
+imshow(sick4);
+%removes objects from the image 150 pixels and smaller
+sick5 = bwareaopen(sick4, 150);
+imshow(sick5)
+figure
+%differentiates and labels all of the various figures (cells) in the image
+[sick6, n] = bwlabel(sick5);
+imshow(sick6)
+figure;
+%clearing cells around border so they are not factored into calculation
+sickleone = imclearborder(sick6);
+imshow(sickleone);
+%regionprops calculates various parameters for each of the figures labelled
+sick7=regionprops(sickleone,'all');
+hold on
+C = [];
+%uses regionprops info MajorAxis and MinorAxis to determine overall structure
+%lines41-47 portion of code based off of code from "Alotaibi, Kholoud.
+%“Sickle Blood Cell Detection Based on Image Segmentation.”" Code was looked at but adapted to fit into parameters of this particular project.
+for i=1:size(sick7,1)
+    areas(i)=sick7(i).Area;
+    mx = sick7(i).MajorAxisLength;
+    mn = sick7(i).MinorAxisLength;
+    sub = mx-mn;
+    C = mx/sub;
+    if(C<1.8)
+        % puts rectangle around the sickle cells in image
+        bound = sick7(i).BoundingBox;
+        x = bound(1);
+        y = bound(2);
+        r = bound(3);
+        v = bound(4);
+        rect = [x y r v];
+        rectangle ('Position',[x y r v],'Edgecolor','g');
+        
+    end
+end
